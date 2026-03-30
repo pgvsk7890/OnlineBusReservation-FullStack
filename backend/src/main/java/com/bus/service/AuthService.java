@@ -6,6 +6,7 @@ import com.bus.dto.RegisterRequest;
 import com.bus.entity.User;
 import com.bus.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,6 +22,9 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public Map<String, Object> register(RegisterRequest request){
 
         User user = new User();
@@ -28,7 +32,7 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
 
         User savedUser = userRepository.save(user);
@@ -46,7 +50,7 @@ public class AuthService {
 
         Optional<User> user = userRepository.findByEmail(request.getEmail());
 
-        if(user.isPresent() && user.get().getPassword().equals(request.getPassword())){
+        if(user.isPresent() && passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
             String token = jwtUtil.generateToken(user.get().getEmail(), user.get().getRole());
 
             Map<String, Object> response = new HashMap<>();

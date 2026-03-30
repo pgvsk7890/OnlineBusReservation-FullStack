@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface BusRepository extends JpaRepository<Bus,Long> {
 
-    List<Bus> findByFromCityAndToCityAndTravelDate(String fromCity,String toCity,String travelDate);
+    List<Bus> findByFromCityAndToCity(String fromCity, String toCity);
 
 }

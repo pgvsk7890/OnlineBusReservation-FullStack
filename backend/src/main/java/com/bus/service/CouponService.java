@@ -26,7 +26,7 @@ public class CouponService {
         return couponRepository.findByActiveTrue();
     }
 
-    public Coupon applyCoupon(String couponCode, int amount) {
+    public Coupon validateCoupon(String couponCode, int amount) {
         Coupon coupon = couponRepository.findByCouponCode(couponCode);
         
         if (coupon == null) {
@@ -56,10 +56,13 @@ public class CouponService {
             discount = coupon.getMaxDiscount();
         }
 
-        coupon.setUsageCount(coupon.getUsageCount() + 1);
-        couponRepository.save(coupon);
-
         return coupon;
+    }
+
+    public Coupon consumeCoupon(String couponCode, int amount) {
+        Coupon coupon = validateCoupon(couponCode, amount);
+        coupon.setUsageCount(coupon.getUsageCount() + 1);
+        return couponRepository.save(coupon);
     }
 
     public void deleteCoupon(Long id) {

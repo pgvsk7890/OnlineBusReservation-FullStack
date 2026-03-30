@@ -71,6 +71,9 @@ public class EmailService {
             String passengerPhone = booking.getPassengerPhone() == null || booking.getPassengerPhone().trim().isEmpty()
                     ? "N/A"
                     : booking.getPassengerPhone().trim();
+            String travelDate = booking.getTravelDate() == null || booking.getTravelDate().trim().isEmpty()
+                    ? booking.getBus().getTravelDate()
+                    : booking.getTravelDate().trim();
 
             String emailContent = String.format(
                 "Dear %s,\n\nYour booking has been confirmed!\n\n" +
@@ -96,7 +99,7 @@ public class EmailService {
                 booking.getBus().getToCity(),
                 booking.getSeatNumber(),
                 booking.getAmount(),
-                booking.getBus().getTravelDate()
+                travelDate
             );
 
             helper.setText(emailContent);
