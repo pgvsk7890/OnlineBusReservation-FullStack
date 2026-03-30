@@ -1,23 +1,23 @@
 import { NavLink, useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 // import "./AdminSidebar.css"
 import "../App.css"
 
-function AdminSideBar({ sidebarOpen, setSidebarOpen }) {
+function AdminSideBar({ setSidebarOpen }) {
 
     const navigate = useNavigate()
     const [collapsed, setCollapsed] = useState(false)
-    const [adminUser, setAdminUser] = useState(null)
-
-    useEffect(() => {
+    const [adminUser] = useState(() => {
         const userStr = localStorage.getItem("user")
         if (userStr) {
             try {
-                const user = JSON.parse(userStr)
-                setAdminUser(user)
-            } catch {}
+                return JSON.parse(userStr)
+            } catch {
+                return null
+            }
         }
-    }, [])
+        return null
+    })
 
     const logout = () => {
         localStorage.removeItem("user")
@@ -108,7 +108,7 @@ function AdminSideBar({ sidebarOpen, setSidebarOpen }) {
                         <polyline points="16 17 21 12 16 7"/>
                         <line x1="21" y1="12" x2="9" y2="12"/>
                     </svg>
-                    {!collapsed && <span>Logout</span>}
+                    <span>Logout</span>
                 </button>
             </div>
         </div>

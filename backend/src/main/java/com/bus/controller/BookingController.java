@@ -72,6 +72,8 @@ public class BookingController {
                     request.getSeatIds(),
                     request.getUserId(),
                     request.getUtrNumber(),
+                    request.getTravelDate(),
+                    request.getCouponCode(),
                     request.getPassengers()
             );
 

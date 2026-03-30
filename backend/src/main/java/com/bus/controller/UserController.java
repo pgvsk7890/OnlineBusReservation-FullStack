@@ -1,5 +1,6 @@
 package com.bus.controller;
 
+import com.bus.config.CloudinaryConfig;
 import com.bus.entity.User;
 import com.bus.service.UserService;
 
@@ -22,6 +23,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CloudinaryConfig cloudinaryConfig;
 
     // Get user profile
     @GetMapping("/{id}")
@@ -47,18 +51,11 @@ public class UserController {
     ) throws Exception {
         validateUserAccess(id);
 
-        String uploadDir = "uploads/";
-
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-        java.nio.file.Path path =
-                java.nio.file.Paths.get(uploadDir + fileName);
-
-        java.nio.file.Files.copy(file.getInputStream(), path);
+        String imageUrl = cloudinaryConfig.uploadImage(file);
 
         User user = userService.getUserById(id);
 
-        user.setProfileImage(fileName);
+        user.setProfileImage(imageUrl);
 
         return userService.save(user);
     }
@@ -85,12 +82,19 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
+            System.out.println("validateUserAccess: no authenticated user for request userId=" + requestedUserId);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
         }
 
         User currentUser = (User) authentication.getPrincipal();
         boolean isAdmin = "ADMIN".equals(currentUser.getRole());
         boolean isOwnProfile = currentUser.getId().equals(requestedUserId);
+
+        System.out.println("validateUserAccess: currentUserId=" + currentUser.getId()
+                + ", role=" + currentUser.getRole()
+                + ", requestedUserId=" + requestedUserId
+                + ", isAdmin=" + isAdmin
+                + ", isOwnProfile=" + isOwnProfile);
 
         if (!isAdmin && !isOwnProfile) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");

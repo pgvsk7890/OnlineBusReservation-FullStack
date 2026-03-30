@@ -38,7 +38,7 @@ public class CouponController {
             String couponCode = (String) request.get("couponCode");
             int amount = (Integer) request.get("amount");
             
-            Coupon coupon = couponService.applyCoupon(couponCode, amount);
+            Coupon coupon = couponService.validateCoupon(couponCode, amount);
             
             int discount = (amount * coupon.getDiscountPercentage()) / 100;
             if (coupon.getMaxDiscount() > 0 && discount > coupon.getMaxDiscount()) {

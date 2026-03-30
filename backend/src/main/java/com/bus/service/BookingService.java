@@ -34,6 +34,9 @@ public class BookingService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private CouponService couponService;
+
     public Seat lockSeat(Long seatId) {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(() -> new RuntimeException("Seat not found"));
@@ -83,10 +86,15 @@ public class BookingService {
         return seatRepository.saveAll(seats);
     }
 
-    public List<Booking> createBookings(List<Long> seatIds, Long userId, String utrNumber, List<PassengerDetailRequest> passengers) {
+    public List<Booking> createBookings(List<Long> seatIds, Long userId, String utrNumber, String travelDate, String couponCode, List<PassengerDetailRequest> passengers) {
         String normalizedUtr = utrNumber == null ? "" : utrNumber.trim().toUpperCase();
+        String normalizedTravelDate = travelDate == null ? "" : travelDate.trim();
+        String normalizedCouponCode = couponCode == null ? "" : couponCode.trim().toUpperCase();
         if (normalizedUtr.isEmpty()) {
             throw new RuntimeException("UTR number is required");
+        }
+        if (normalizedTravelDate.isEmpty()) {
+            throw new RuntimeException("Travel date is required");
         }
 
         User user = userRepository.findById(userId)
@@ -111,8 +119,10 @@ public class BookingService {
 
             List<Seat> fetchedSeats = seatRepository.findAllById(seatIds);
             Map<Long, Seat> seatById = new HashMap<>();
+            int totalAmount = 0;
             for (Seat seat : fetchedSeats) {
                 seatById.put(seat.getId(), seat);
+                totalAmount += seat.getPrice() == null ? 0 : seat.getPrice().intValue();
             }
 
             List<Booking> bookings = new ArrayList<>();
@@ -162,12 +172,19 @@ public class BookingService {
                 booking.setPassengerAge(passengerAge);
                 booking.setPassengerGender(passengerGender);
                 booking.setPassengerPhone(passengerPhone.isEmpty() ? null : passengerPhone);
+                booking.setTravelDate(normalizedTravelDate);
                 booking.setBookingTime(LocalDateTime.now());
 
                 bookings.add(booking);
             }
 
-            return bookingRepository.saveAll(bookings);
+            List<Booking> savedBookings = bookingRepository.saveAll(bookings);
+
+            if (!normalizedCouponCode.isEmpty()) {
+                couponService.consumeCoupon(normalizedCouponCode, totalAmount);
+            }
+
+            return savedBookings;
         } catch (RuntimeException e) {
             emailService.sendPaymentFailedEmail(user, normalizedUtr, e.getMessage());
             throw e;

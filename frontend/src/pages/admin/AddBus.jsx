@@ -14,7 +14,6 @@ function AddBus() {
     const [toCity, setToCity] = useState("")
     const [departureTime, setDepartureTime] = useState("")
     const [arrivalTime, setArrivalTime] = useState("")
-    const [travelDate, setTravelDate] = useState("")
     const [busType, setBusType] = useState("AC")
     const [seaterPrice, setSeaterPrice] = useState("")
     const [sleeperPrice, setSleeperPrice] = useState("")
@@ -31,7 +30,6 @@ function AddBus() {
                 toCity,
                 departureTime,
                 arrivalTime,
-                travelDate,
                 busType,
                 seaterPrice,
                 sleeperPrice
@@ -40,7 +38,7 @@ function AddBus() {
             await api.post("/bus/add", bus)
             alert("Bus Added Successfully")
             navigate("/admin/manage-buses")
-        } catch (err) {
+        } catch {
             alert("Failed to add bus")
         } finally {
             setLoading(false)
@@ -120,16 +118,6 @@ function AddBus() {
                             type="time"
                             value={arrivalTime}
                             onChange={(e) => setArrivalTime(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Travel Date</label>
-                        <input
-                            type="date"
-                            value={travelDate}
-                            onChange={(e) => setTravelDate(e.target.value)}
                             required
                         />
                     </div>

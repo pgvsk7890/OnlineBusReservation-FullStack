@@ -32,6 +32,9 @@ public class Booking {
     @Column(length = 20)
     private String passengerPhone;
 
+    @Column(length = 20)
+    private String travelDate;
+
     private LocalDateTime bookingTime = LocalDateTime.now();
 
     @ManyToOne
@@ -72,6 +75,9 @@ public class Booking {
 
     public String getPassengerPhone() { return passengerPhone; }
     public void setPassengerPhone(String passengerPhone) { this.passengerPhone = passengerPhone; }
+
+    public String getTravelDate() { return travelDate; }
+    public void setTravelDate(String travelDate) { this.travelDate = travelDate; }
 
     public LocalDateTime getBookingTime() { return bookingTime; }
     public void setBookingTime(LocalDateTime bookingTime) { this.bookingTime = bookingTime; }

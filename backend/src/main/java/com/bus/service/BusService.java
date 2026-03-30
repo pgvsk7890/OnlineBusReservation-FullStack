@@ -84,8 +84,8 @@ public class BusService {
         busRepository.delete(bus);
     }
 
-    public List<Bus> searchBus(String from,String to,String date){
-        return busRepository.findByFromCityAndToCityAndTravelDate(from,to,date);
+    public List<Bus> searchBus(String from, String to, String date){
+        return busRepository.findByFromCityAndToCity(from, to);
     }
 
     public List<Seat> getSeats(Long busId){
@@ -108,12 +108,22 @@ public class BusService {
         existingBus.setToCity(bus.getToCity());
         existingBus.setDepartureTime(bus.getDepartureTime());
         existingBus.setArrivalTime(bus.getArrivalTime());
-        existingBus.setTravelDate(bus.getTravelDate());
-
         existingBus.setSeaterPrice(bus.getSeaterPrice());
         existingBus.setSleeperPrice(bus.getSleeperPrice());
 
-        return busRepository.save(existingBus);
+        Bus savedBus = busRepository.save(existingBus);
+
+        List<Seat> seats = seatRepository.findByBus(existingBus);
+        for (Seat seat : seats) {
+            if ("SEATER".equals(seat.getSeatType())) {
+                seat.setPrice(bus.getSeaterPrice());
+            } else if ("SLEEPER".equals(seat.getSeatType())) {
+                seat.setPrice(bus.getSleeperPrice());
+            }
+            seatRepository.save(seat);
+        }
+
+        return savedBus;
     }
 
     public Seat updateSeatPrice(Long seatId, Double price){

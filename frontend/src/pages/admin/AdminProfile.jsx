@@ -81,20 +81,48 @@ function AdminProfile() {
         }
 
         try {
+            const sessionUser = JSON.parse(localStorage.getItem("user") || "{}")
+            const token = sessionUser?.token || admin?.token
+            const userId = sessionUser?.id || admin?.id
+
+            if (!userId) {
+                alert("User session not found. Please login again.")
+                navigate("/login")
+                return
+            }
+
+            if (!file.type.startsWith("image/")) {
+                alert("Please upload a valid image file.")
+                return
+            }
+
+            const maxSizeMb = 2
+            if (file.size > maxSizeMb * 1024 * 1024) {
+                alert(`Image must be under ${maxSizeMb}MB.`)
+                return
+            }
+
             const payload = new FormData()
             payload.append("file", file)
 
-            const res = await api.post(`/user/upload/${admin.id}`, payload, {
-                headers: { "Content-Type": "multipart/form-data" }
+            const res = await api.post(`/user/upload/${userId}`, payload, {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                }
             })
 
-            const token = admin?.token || JSON.parse(localStorage.getItem("user") || "{}")?.token
             localStorage.setItem("user", JSON.stringify({ ...res.data, token }))
             setAdmin({ ...res.data, token })
             alert("Profile image uploaded successfully")
         } catch (err) {
             console.error(err)
-            alert("Upload failed")
+            if (err.response?.status === 401) {
+                alert("Session expired. Please login again.")
+                navigate("/login")
+                return
+            }
+            const message = err.response?.data?.message || err.response?.data || "Upload failed"
+            alert(typeof message === "string" ? message : "Upload failed")
         }
     }
 
@@ -171,7 +199,7 @@ function AdminProfile() {
                             <div className="admin-profile-avatar-area">
                                 {admin.profileImage ? (
                                     <img
-                                        src={`http://localhost:8080/uploads/${admin.profileImage}`}
+                                        src={admin.profileImage.startsWith("http") ? admin.profileImage : `http://localhost:8080/uploads/${admin.profileImage}`}
                                         alt="profile"
                                         className="admin-profile-image"
                                     />
